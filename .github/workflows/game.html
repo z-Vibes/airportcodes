@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airport Code Memory Game</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        p.intro {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-purple {
+            background-color: #9b59b6;
+        }
+        .btn-purple:hover {
+            background-color: #8e44ad;
+        }
+        .btn-amber {
+            background-color: #f39c12;
+        }
+        .btn-amber:hover {
+            background-color: #e67e22;
+        }
+        .btn-gray {
+            background-color: #7f8c8d;
+        }
+        .btn-gray:hover {
+            background-color: #6c7a7d;
+        }
+        .btn-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background-color: white;
+            color: #2c3e50;
+            border: 2px solid #3498db;
+            margin-bottom: 10px;
+        }
+        .btn-option:hover {
+            background-color: #ecf0f1;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .feedback {
+            text-align: center;
+            font-weight: bold;
+            margin: 15px 0;
+            height: 24px;
+        }
+        .correct {
+            color: #27ae60;
+        }
+        .incorrect {
+            color: #e74c3c;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .question {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin: 30px 0;
+        }
+        select, label {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        label {
+            border: none;
+            padding: 0;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .game-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .option-container {
+            margin-bottom: 15px;
+        }
+        .buttons-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .tips {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 30px;
+        }
+        .tips h3 {
+            margin-top: 0;
+        }
+        .tips ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        .region-info {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            .game-options {
+                grid-template-columns: 1fr;
+            }
+            .buttons-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Menu Screen -->
+        <div id="menu-screen">
+            <h1>Airport Code Memory Game</h1>
+            <p class="intro">Train your memory with 107 airport codes using proven spaced repetition techniques</p>
+            
+            <div class="game-options">
+                <div class="option-container">
+                    <label for="region-select">Region Filter:</label>
+                    <select id="region-select">
+                        <option value="All">All</option>
+                        <!-- Regions will be added dynamically -->
+                    </select>
+                </div>
+                
+                <div class="option-container">
+                    <label for="difficulty-select">Difficulty:</label>
+                    <select id="difficulty-select">
+                        <option value="easy">Easy (4 options)</option>
+                        <option value="medium">Medium (6 options)</option>
+                        <option value="hard">Hard (8 options)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="buttons-container">
+                <button id="start-code-to-city" class="btn">Play: Code → City</button>
+                <button id="start-city-to-code" class="btn btn-purple">Play: City → Code</button>
+            </div>
+            
+            <button id="start-review" class="btn btn-amber" style="width: 100%; margin-top: 10px;" disabled>
+                Review Missed Items (0)
+            </button>
+            
+            <div id="menu-feedback" class="feedback"></div>
+            
+            <div class="tips">
+                <h3>Memory Tips:</h3>
+                <ul>
+                    <li>Look for patterns in airport codes (first letters, historical names)</li>
+                    <li>Create visual associations between codes and cities</li>
+                    <li>Practice daily rather than cramming all at once</li>
+                    <li>Use the "Review Missed Items" feature to focus on challenging codes</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <div class="game-header">
+                <h2 id="game-mode-title">Code to City</h2>
+                <div id="score">Score: <strong>0</strong>/0</div>
+            </div>
+            
+            <div class="question-container">
+                <p id="question-label">What city does this code represent?</p>
+                <div id="question" class="question">LAX</div>
+                <div id="game-feedback" class="feedback"></div>
+                <div id="region-info" class="region-info">Region: West Coast</div>
+            </div>
+            
+            <div id="options-container">
+                <!-- Options will be added dynamically -->
+            </div>
+            
+            <div class="controls">
+                <button id="back-to-menu" class="btn btn-gray">Back to Menu</button>
+                <div id="study-info" class="study-info">Studying: All regions</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Airport data array
+        const airportData = [
+            { code: 'ABQ', city: 'Albuquerque, NM', region: 'Southwest' },
+            { code: 'ALB', city: 'Albany, NY', region: 'Northeast' },
+            { code: 'AMA', city: 'Amarillo, TX', region: 'Southwest' },
+            { code: 'ATL', city: 'Atlanta, GA', region: 'Southeast' },
+            { code: 'AUA', city: 'Aruba, Aruba', region: 'Caribbean' },
+            { code: 'AUS', city: 'Austin, TX', region: 'Southwest' },
+            { code: 'BDL', city: 'Hartford, CT', region: 'Northeast' },
+            { code: 'BHM', city: 'Birmingham, AL', region: 'Southeast' },
+            { code: 'BNA', city: 'Nashville, TN', region: 'Southeast' },
+            { code: 'BOI', city: 'Boise, ID', region: 'Northwest' },
+            { code: 'BOS', city: 'Boston (Logan), MA', region: 'Northeast' },
+            { code: 'BUF', city: 'Buffalo, NY', region: 'Northeast' },
+            { code: 'BUR', city: 'Burbank, CA', region: 'West Coast' },
+            { code: 'BWI', city: 'Baltimore, MD', region: 'Northeast' },
+            { code: 'BZE', city: 'Belize City, Belize', region: 'Central America' },
+            { code: 'BZN', city: 'Bozeman, MT', region: 'Northwest' },
+            { code: 'CHS', city: 'Charleston, SC', region: 'Southeast' },
+            { code: 'CLE', city: 'Cleveland, OH', region: 'Midwest' },
+            { code: 'CLT', city: 'Charlotte, NC', region: 'Southeast' },
+            { code: 'CMH', city: 'Columbus, OH', region: 'Midwest' },
+            { code: 'COS', city: 'Colorado Springs, CO', region: 'Mountain' },
+            { code: 'CRP', city: 'Corpus Christi, TX', region: 'Southwest' },
+            { code: 'CUN', city: 'Cancun, Mexico', region: 'Mexico' },
+            { code: 'CVG', city: 'Cincinnati, OH', region: 'Midwest' },
+            { code: 'DAL', city: 'Dallas (Love Field), TX', region: 'Southwest' },
+            { code: 'DCA', city: 'Washington, DC', region: 'Northeast' },
+            { code: 'DEN', city: 'Denver, CO', region: 'Mountain' },
+            { code: 'DSM', city: 'Des Moines, IA', region: 'Midwest' },
+            { code: 'DTW', city: 'Detroit, MI', region: 'Midwest' },
+            { code: 'ECP', city: 'Panama City Beach, FL', region: 'Southeast' },
+            { code: 'ELP', city: 'El Paso, TX', region: 'Southwest' },
+            { code: 'EUG', city: 'Eugene, OR', region: 'Northwest' },
+            { code: 'FAT', city: 'Fresno, CA', region: 'West Coast' },
+            { code: 'FLL', city: 'Ft. Lauderdale, FL', region: 'Southeast' },
+            { code: 'GCM', city: 'Grand Cayman', region: 'Caribbean' },
+            { code: 'GEG', city: 'Spokane, WA', region: 'Northwest' },
+            { code: 'GRR', city: 'Grand Rapids, MI', region: 'Midwest' },
+            { code: 'GSP', city: 'Greenville/Spartanburg, SC', region: 'Southeast' },
+            { code: 'HAV', city: 'Havana, Cuba', region: 'Caribbean' },
+            { code: 'HDN', city: 'Steamboat Springs, CO', region: 'Mountain' },
+            { code: 'HNL', city: 'Honolulu, HI', region: 'Hawaii' },
+            { code: 'HOU', city: 'Houston (Hobby), TX', region: 'Southwest' },
+            { code: 'HRL', city: 'Harlingen, TX', region: 'Southwest' },
+            { code: 'IAD', city: 'Washington (Dulles), VA', region: 'Northeast' },
+            { code: 'ICT', city: 'Wichita, KS', region: 'Midwest' },
+            { code: 'IND', city: 'Indianapolis, IN', region: 'Midwest' },
+            { code: 'ISP', city: 'Long Island, NY', region: 'Northeast' },
+            { code: 'ITO', city: 'Hilo, HI', region: 'Hawaii' },
+            { code: 'JAN', city: 'Jackson, MS', region: 'Southeast' },
+            { code: 'JAX', city: 'Jacksonville, FL', region: 'Southeast' },
+            { code: 'KOA', city: 'Kailua, HI', region: 'Hawaii' },
+            { code: 'LAS', city: 'Las Vegas, NV', region: 'Southwest' },
+            { code: 'LAX', city: 'Los Angeles, CA', region: 'West Coast' },
+            { code: 'LIH', city: 'Lihue, HI', region: 'Hawaii' },
+            { code: 'LBB', city: 'Lubbock, TX', region: 'Southwest' },
+            { code: 'LGA', city: 'New York (LaGuardia), NY', region: 'Northeast' },
+            { code: 'LGB', city: 'Long Beach, CA', region: 'West Coast' },
+            { code: 'LIR', city: 'Liberia, Costa Rica', region: 'Central America' },
+            { code: 'LIT', city: 'Little Rock, AR', region: 'Southeast' },
+            { code: 'MAF', city: 'Midland/Odessa, TX', region: 'Southwest' },
+            { code: 'MBJ', city: 'Montego Bay, Jamaica', region: 'Caribbean' },
+            { code: 'MCI', city: 'Kansas City, MO', region: 'Midwest' },
+            { code: 'MCO', city: 'Orlando, FL', region: 'Southeast' },
+            { code: 'MDW', city: 'Chicago, IL', region: 'Midwest' },
+            { code: 'MEM', city: 'Memphis, TN', region: 'Southeast' },
+            { code: 'MHT', city: 'Manchester, NH', region: 'Northeast' },
+            { code: 'MIA', city: 'Miami, FL', region: 'Southeast' },
+            { code: 'MKE', city: 'Milwaukee, WI', region: 'Midwest' },
+            { code: 'MSP', city: 'Minneapolis/St. Paul, MN', region: 'Midwest' },
+            { code: 'MSY', city: 'New Orleans, LA', region: 'Southeast' },
+            { code: 'MTJ', city: 'Montrose (Telluride), CO', region: 'Mountain' },
+            { code: 'MYR', city: 'Myrtle Beach, SC', region: 'Southeast' },
+            { code: 'NAS', city: 'Nassau, Bahamas', region: 'Caribbean' },
+            { code: 'OAK', city: 'Oakland, CA', region: 'West Coast' },
+            { code: 'OGG', city: 'Maui, HI', region: 'Hawaii' },
+            { code: 'OKC', city: 'Oklahoma City, OK', region: 'Southwest' },
+            { code: 'OMA', city: 'Omaha, NE', region: 'Midwest' },
+            { code: 'ONT', city: 'Ontario/LA, CA', region: 'West Coast' },
+            { code: 'ORD', city: 'Chicago (O\'Hare), IL', region: 'Midwest' },
+            { code: 'ORF', city: 'Norfolk, VA', region: 'Southeast' },
+            { code: 'PBI', city: 'West Palm Beach, FL', region: 'Southeast' },
+            { code: 'PDX', city: 'Portland, OR', region: 'Northwest' },
+            { code: 'PHL', city: 'Philadelphia, PA', region: 'Northeast' },
+            { code: 'PHX', city: 'Phoenix, AZ', region: 'Southwest' },
+            { code: 'PIT', city: 'Pittsburgh, PA', region: 'Northeast' },
+            { code: 'PLS', city: 'Turks and Caicos', region: 'Caribbean' },
+            { code: 'PNS', city: 'Pensacola, FL', region: 'Southeast' },
+            { code: 'PSP', city: 'Palm Springs, CA', region: 'West Coast' },
+            { code: 'PUJ', city: 'Punta Cana, Dominican Republic', region: 'Caribbean' },
+            { code: 'PVD', city: 'Providence, RI', region: 'Northeast' },
+            { code: 'PVR', city: 'Puerto Vallarta, Mexico', region: 'Mexico' },
+            { code: 'PWM', city: 'Portland, ME', region: 'Northeast' },
+            { code: 'RDU', city: 'Raleigh/Durham, NC', region: 'Southeast' },
+            { code: 'RIC', city: 'Richmond, VA', region: 'Southeast' },
+            { code: 'RNO', city: 'Reno/Tahoe, NV', region: 'West Coast' },
+            { code: 'ROC', city: 'Rochester, NY', region: 'Northeast' },
+            { code: 'RSW', city: 'Ft. Myers, FL', region: 'Southeast' },
+            { code: 'SAN', city: 'San Diego, CA', region: 'West Coast' },
+            { code: 'SAT', city: 'San Antonio, TX', region: 'Southwest' },
+            { code: 'SAV', city: 'Savannah, GA', region: 'Southeast' },
+            { code: 'SBA', city: 'Santa Barbara, CA', region: 'West Coast' },
+            { code: 'SDF', city: 'Louisville, KY', region: 'Southeast' },
+            { code: 'SEA', city: 'Seattle/Tacoma, WA', region: 'Northwest' },
+            { code: 'SFO', city: 'San Francisco, CA', region: 'West Coast' },
+            { code: 'SJC', city: 'San Jose, CA', region: 'West Coast' },
+            { code: 'SJD', city: 'Cabo San Lucas/Los Cabos, Mexico', region: 'Mexico' },
+            { code: 'SJO', city: 'San Jose, Costa Rica', region: 'Central America' },
+            { code: 'SJU', city: 'San Juan, Puerto Rico', region: 'Caribbean' },
+            { code: 'SLC', city: 'Salt Lake City, UT', region: 'Mountain' },
+            { code: 'SMF', city: 'Sacramento, CA', region: 'West Coast' },
+            { code: 'SNA', city: 'Orange County, CA', region: 'West Coast' },
+            { code: 'SRQ', city: 'Sarasota, FL', region: 'Southeast' },
+            { code: 'STL', city: 'St. Louis, MO', region: 'Midwest' },
+            { code: 'TPA', city: 'Tampa, FL', region: 'Southeast' },
+            { code: 'TUL', city: 'Tulsa, OK', region: 'Southwest' },
+            { code: 'TUS', city: 'Tucson, AZ', region: 'Southwest' },
+            { code: 'VPS', city: 'Destin, FL', region: 'Southeast' }
+        ];
+
+        // Game state variables
+        let gameMode = 'menu';
+        let score = 0;
+        let questionCount = 0;
+        let currentQuestion = null;
+        let options = [];
+        let studyRegion = 'All';
+        let difficulty = 'easy';
+        let reviewList = [];
+        let reviewMode = false;
+
+        // DOM elements
+        const menuScreen = document.getElementById('menu-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const regionSelect = document.getElementById('region-select');
+        const difficultySelect = document.getElementById('difficulty-select');
+        const startCodeToCityBtn = document.getElementById('start-code-to-city');
+        const startCityToCodeBtn = document.getElementById('start-city-to-code');
+        const startReviewBtn = document.getElementById('start-review');
+        const backToMenuBtn = document.getElementById('back-to-menu');
+        const menuFeedback = document.getElementById('menu-feedback');
+        const gameFeedback = document.getElementById('game-feedback');
+        const gameModeTitle = document.getElementById('game-mode-title');
+        const questionLabel = document.getElementById('question-label');
+        const questionElement = document.getElementById('question');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreElement = document.getElementById('score');
+        const regionInfo = document.getElementById('region-info');
+        const studyInfo = document.getElementById('study-info');
+
+        // Initialize the game
+        function initGame() {
+            populateRegions();
+            setupEventListeners();
+            updateReviewButton();
+        }
+
+        // Populate unique regions for filter dropdown
+        function populateRegions() {
+            const regions = ['All', ...new Set(airportData.map(airport => airport.region))].sort();
+            
+            regions.forEach(region => {
+                const option = document.createElement('option');
+                option.value = region;
+                option.textContent = region;
+                regionSelect.appendChild(option);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            startCodeToCityBtn.addEventListener('click', () => startGame('code-to-city'));
+            startCityToCodeBtn.addEventListener('click', () => startGame('city-to-code'));
+            startReviewBtn.addEventListener('click', startReview);
+            backToMenuBtn.addEventListener('click', showMenu);
+            
+            regionSelect.addEventListener('change', (e) => {
+                studyRegion = e.target.value;
+                updateStudyInfo();
+            });
+            
+            difficultySelect.addEventListener('change', (e) => {
+                difficulty = e.target.value;
+            });
+        }
+
+        // Get filtered airports based on selected region
+        function getFilteredAirports() {
+            if (studyRegion === 'All') return airportData;
+            return airportData.filter(airport => airport.region === studyRegion);
+        }
+
+        // Show the menu screen
+        function showMenu() {
+            gameScreen.classList.add('hidden');
+            menuScreen.classList.remove('hidden');
+            gameMode = 'menu';
+            updateReviewButton();
+        }
+
+        // Show the game screen
+        function showGame() {
+            menuScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+        }
+
+        // Start the game with selected mode
+        function startGame(mode) {
+            gameMode = mode;
+            reviewMode = false;
+            score = 0;
+            questionCount = 0;
+            updateScore();
+            
+            gameModeTitle.textContent = mode === 'code-to-city' ? 'Code to City' : 'City to Code';
+            questionLabel.textContent = mode === 'code-to-city' 
+                ? 'What city does this code represent?' 
+                : 'What is the code for this city?';
+            
+            showGame();
+            updateStudyInfo();
+            generateQuestion();
+        }
+
+        // Start review mode
+        function startReview() {
+            if (reviewList.length === 0) {
+                menuFeedback.textContent = 'No items to review yet! Play some games first.';
+                menuFeedback.className = 'feedback incorrect';
+                return;
+            }
+            
+            reviewMode = true;
+            gameMode = reviewList[0].reviewMode; // Use the original game mode of the first review item
+            score = 0;
+            questionCount = 0;
+            updateScore();
+            
+            gameModeTitle.textContent = 'Review Mode: ' + (gameMode === 'code-to-city' ? 'Code to City' : 'City to Code');
+            questionLabel.textContent = gameMode === 'code-to-city' 
+                ? 'What city does this code represent?' 
+                : 'What is the code for this city?';
+            
+            showGame();
+            studyInfo.textContent = `${reviewList.length} items left to review`;
+            generateQuestion();
+        }
+
+        // Generate a question
+        function generateQuestion() {
+            // Clear previous feedback
+            gameFeedback.textContent = '';
+            gameFeedback.className = 'feedback';
+            
+            // Use either review list or filtered airports
+            const sourceData = reviewMode ? reviewList : getFilteredAirports();
+            
+            if (sourceData.length === 0) {
+                gameFeedback.textContent = 'No airports available with current filters. Please change your selection.';
+                gameFeedback.className = 'feedback incorrect';
+                return;
+            }
+            
+            // Randomly select a correct answer
+            const correctIndex = Math.floor(Math.random() * sourceData.length);
+            const correctAirport = sourceData[correctIndex];
+            
+            // Store review mode with the question if in regular mode
+            if (!reviewMode) {
+                correctAirport.reviewMode = gameMode;
+            }
+            
+            // Generate incorrect options
+            let incorrectOptions = [];
+            const numOptions = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 5 : 7;
+            
+            // Create a pool of airports that are not the correct answer
+            const poolForOptions = airportData.filter(airport => 
+                gameMode === 'code-to-city' 
+                    ? airport.city !== correctAirport.city 
+                    : airport.code !== correctAirport.code
+            );
+            
+            // Randomly select options from the pool
+            while (incorrectOptions.length < numOptions && incorrectOptions.length < poolForOptions.length) {
+                const randomIndex = Math.floor(Math.random() * poolForOptions.length);
+                const option = poolForOptions[randomIndex];
+                
+                // Check if this option is already in our incorrect options
+                if (!incorrectOptions.some(o => 
+                    gameMode === 'code-to-city' 
+                        ? o.city === option.city 
+                        : o.code === option.code
+                )) {
+                    incorrectOptions.push(option);
+                }
+            }
+            
+            // Combine and shuffle all options
+            const allOptions = [correctAirport, ...incorrectOptions];
+            for (let i = allOptions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+            }
+            
+            currentQuestion = correctAirport;
+            options = allOptions;
+            
+            // Update the UI
+            questionElement.textContent = gameMode === 'code-to-city' ? currentQuestion.code : currentQuestion.city;
+            regionInfo.textContent = `Region: ${currentQuestion.region}`;
+            
+            // Create option buttons
+            optionsContainer.innerHTML = '';
+            options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'btn btn-option';
+                button.textContent = gameMode === 'code-to-city' ? option.city : option.code;
+                button.addEventListener('click', () => handleAnswerSelect(option));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Handle answer selection
+        function handleAnswerSelect(selectedOption) {
+            const isCorrect = 
+                gameMode === 'code-to-city' 
+                    ? selectedOption.city === currentQuestion.city 
+                    : selectedOption.code === currentQuestion.code;
+            
+            if (isCorrect) {
+                score++;
+                gameFeedback.textContent = 'Correct!';
+                gameFeedback.className = 'feedback correct';
+                
+                // Remove from review list if present
+                if (reviewMode) {
+                    reviewList = reviewList.filter(item => item.code !== currentQuestion.code);
+                    studyInfo.textContent = `${reviewList.length} items left to review`;
+                }
+            } else {
+                gameFeedback.textContent = `Incorrect! The correct answer is ${
+                    gameMode === 'code-to-city' ? currentQuestion.city : currentQuestion.code
+                }`;
+                gameFeedback.className = 'feedback incorrect';
+                
+                // Add to review list if not already there
+                if (!reviewMode && !reviewList.some(item => item.code === currentQuestion.code)) {
+                    reviewList.push(currentQuestion);
+                    updateReviewButton();
+                }
+            }
+            
+            questionCount++;
+            updateScore();
+            
+            // Disable all option buttons
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.disabled = true;
+                
+                // Highlight correct and incorrect answers
+                if (gameMode === 'code-to-city') {
+                    if (button.textContent === currentQuestion.city) {
+                        button.style.borderColor = '#27ae60';
+                        button.style.backgroundColor = '#e9f7ef';
+                    } else if (button.textContent === selectedOption.city && !isCorrect) {
+                        button.style.borderColor = '#e74c3c';
+                        button.style.backgroundColor = '#f8e7e5';
+                    }
+                } else {
+                    if (button.textContent === currentQuestion.code) {
+                        button.style.borderColor = '#27ae60';
+                        button.style.backgroundColor = '#e9f7ef';
+                    } else if (button.textContent === selectedOption.code && !isCorrect) {
+                        button.style.borderColor = '#e74c3c';
+                        button.style.backgroundColor = '#f8e7e5';
+                    }
+                }
+            });
+            
+            // Generate a new question after a delay
+            setTimeout(() => {
+                if (reviewMode && reviewList.length === 0) {
+                    // End review mode if no more items to review
+                    showMenu();
+                    menuFeedback.textContent = 'Review complete!';
+                    menuFeedback.className = 'feedback correct';
+                    return;
+                }
+                
+                generateQuestion();
+            }, 1500);
+        }
+
+        // Update the score display
+        function updateScore() {
+            const scoreDisplay = scoreElement.querySelector('strong');
+            scoreDisplay.textContent = score;
+            scoreElement.innerHTML = `Score: <strong>${score}</strong>/${questionCount}`;
+        }
+
+        // Update the review button status
+        function updateReviewButton() {
+            startReviewBtn.textContent = `Review Missed Items (${reviewList.length})`;
+            startReviewBtn.disabled = reviewList.length === 0;
+            if (reviewList.length === 0) {
+                startReviewBtn.style.opacity = '0.5';
+                startReviewBtn.style.cursor = 'not-allowed';
+            } else {
+                startReviewBtn.style.opacity = '1';
+                startReviewBtn.style.cursor = 'pointer';
+            }
+        }
+
+        // Update study region info
+        function updateStudyInfo() {
+            studyInfo.textContent = `Studying: ${studyRegion} region`;
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
